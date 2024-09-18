@@ -1,0 +1,62 @@
+# Importing libraries
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import SGDClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report, accuracy_score
+
+# Load the dataset
+url = 'YOUR_DATASET_URL_HERE'  # Replace with the actual dataset URL
+data = pd.read_csv(url)
+
+# Display first few rows of the dataset
+print(data.head())
+
+# Check for missing values
+print(data.isnull().sum())
+
+# Descriptive statistics
+print(data.describe())
+
+# Data Visualization
+sns.pairplot(data, hue='quality')
+plt.show()
+
+# Split the dataset into features and target
+X = data.drop('quality', axis=1)
+y = data['quality']
+
+# Split the dataset into training and test sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Initialize the models
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+sgd_model = SGDClassifier(max_iter=1000, tol=1e-3, random_state=42)
+svc_model = SVC(kernel='linear', random_state=42)
+
+# Train the models
+rf_model.fit(X_train, y_train)
+sgd_model.fit(X_train, y_train)
+svc_model.fit(X_train, y_train)
+
+# Make predictions
+rf_predictions = rf_model.predict(X_test)
+sgd_predictions = sgd_model.predict(X_test)
+svc_predictions = svc_model.predict(X_test)
+
+# Evaluate the models
+print("Random Forest Classifier Report:")
+print(classification_report(y_test, rf_predictions))
+print("Accuracy:", accuracy_score(y_test, rf_predictions))
+
+print("\nStochastic Gradient Descent Classifier Report:")
+print(classification_report(y_test, sgd_predictions))
+print("Accuracy:", accuracy_score(y_test, sgd_predictions))
+
+print("\nSupport Vector Classifier Report:")
+print(classification_report(y_test, svc_predictions))
+print("Accuracy:", accuracy_score(y_test, svc_predictions))
