@@ -1,0 +1,96 @@
+import pandas as pd
+import numpy as np
+import nltk
+from nltk.util import ngrams
+from collections import Counter
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.metrics import accuracy_score
+import matplotlib.pyplot as plt
+
+# Load dataset
+df = pd.read_csv('text_data.csv')
+texts = df['text'].tolist()
+
+# NLP Preprocessing
+def preprocess(text):
+    text = text.lower()
+    text = nltk.word_tokenize(text)
+    text = [word for word in text if word.isalnum()]
+    return ' '.join(text)
+
+texts = [preprocess(text) for text in texts]
+
+# Autocomplete Algorithm
+class Autocomplete:
+    def __init__(self, texts):
+        self.texts = texts
+        self.ngrams = self.create_ngrams(texts)
+
+    def create_ngrams(self, texts, n=3):
+        ngrams_list = []
+        for text in texts:
+            tokens = text.split()
+            ngrams_list.extend(list(ngrams(tokens, n)))
+        return Counter(ngrams_list)
+
+    def predict(self, prefix, n=3):
+        prefix_tokens = prefix.split()[-2:]
+        prefix_ngram = tuple(prefix_tokens)
+        candidates = [ngram for ngram in self.ngrams if ngram[:len(prefix_tokens)] == prefix_tokens]
+        candidates_counts = Counter(candidates)
+        return candidates_counts.most_common(n)
+
+# Example usage
+autocomplete = Autocomplete(texts)
+print(autocomplete.predict("data ana", 5))
+
+# Autocorrect Algorithm
+class Autocorrect:
+    def __init__(self, texts):
+        self.texts = texts
+        self.vocabulary = set(word for text in texts for word in text.split())
+
+    def edit_distance(self, word1, word2):
+        # Compute the Levenshtein distance between two words
+        if len(word1) < len(word2):
+            word1, word2 = word2, word1
+        distances = range(len(word2) + 1)
+        for i, c1 in enumerate(word1):
+            distances_ = [i + 1]
+            for j, c2 in enumerate(word2):
+                cost = 0 if c1 == c2 else 1
+                distances_.append(min((distances[j + 1] + 1, distances_[j] + 1, distances[j] + cost)))
+            distances = distances_
+        return distances[-1]
+
+    def correct(self, word):
+        candidates = [word]
+        candidates.extend(self.vocabulary)
+        distances = {candidate: self.edit_distance(word, candidate) for candidate in candidates}
+        return min(distances, key=distances.get)
+
+# Example usage
+autocorrect = Autocorrect(texts)
+print(autocorrect.correct("exmaple"))
+
+# Metrics and Evaluation
+def evaluate_model(predictions, true_values):
+    return accuracy_score(true_values, predictions)
+
+# Example data for evaluation
+true_values = ["data analysis", "example"]
+predictions = ["data anal", "example"]
+print("Accuracy:", evaluate_model(predictions, true_values))
+
+# Visualization
+def plot_ngram_distribution(ngram_counts):
+    ngrams, counts = zip(*ngram_counts.items())
+    plt.figure(figsize=(10, 5))
+    plt.bar(range(len(counts)), counts, tick_label=[' '.join(ngram) for ngram in ngrams])
+    plt.xticks(rotation=90)
+    plt.xlabel('N-grams')
+    plt.ylabel('Frequency')
+    plt.title('N-gram Distribution')
+    plt.show()
+
+plot_ngram_distribution(autocomplete.ngrams)
