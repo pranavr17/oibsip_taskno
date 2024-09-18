@@ -1,0 +1,71 @@
+pip install pandas matplotlib seaborn nltk
+import pandas as pd
+
+# Load the dataset
+url = 'path_to_your_dataset.csv'
+df = pd.read_csv(url)
+
+# Display the first few rows of the dataframe
+print(df.head())
+
+# Check for missing values
+print(df.isnull().sum())
+
+# Fill or drop missing values as necessary
+df.dropna(inplace=True)  # or df.fillna(value, inplace=True)
+
+# Convert data types if needed
+df['Rating'] = df['Rating'].astype(float)
+df['Size'] = df['Size'].str.replace('M', '').astype(float)  # Example conversion for Size
+df['Price'] = df['Price'].str.replace('$', '').astype(float)  # Example conversion for Price
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Distribution of apps across categories
+plt.figure(figsize=(12, 8))
+sns.countplot(y='Category', data=df, order=df['Category'].value_counts().index)
+plt.title('App Distribution Across Categories')
+plt.xlabel('Number of Apps')
+plt.ylabel('Category')
+plt.show()
+# Rating Distribution
+plt.figure(figsize=(10, 6))
+sns.histplot(df['Rating'], bins=30, kde=True)
+plt.title('Distribution of App Ratings')
+plt.xlabel('Rating')
+plt.ylabel('Frequency')
+plt.show()
+
+# Price Distribution
+plt.figure(figsize=(10, 6))
+sns.histplot(df['Price'], bins=30, kde=True)
+plt.title('Distribution of App Prices')
+plt.xlabel('Price')
+plt.ylabel('Frequency')
+plt.show()
+from nltk.sentiment.vader import SentimentIntensityAnalyzer
+
+# Initialize the sentiment analyzer
+sia = SentimentIntensityAnalyzer()
+
+# Function to get sentiment
+def get_sentiment(review):
+    return sia.polarity_scores(review)['compound']
+
+# Apply sentiment analysis to reviews
+df['Sentiment'] = df['Reviews'].apply(lambda review: get_sentiment(str(review)))
+
+# Sentiment Distribution
+plt.figure(figsize=(10, 6))
+sns.histplot(df['Sentiment'], bins=30, kde=True)
+plt.title('Distribution of Sentiment Scores')
+plt.xlabel('Sentiment Score')
+plt.ylabel('Frequency')
+plt.show()
+import plotly.express as px
+
+# Scatter plot of Rating vs Size
+fig = px.scatter(df, x='Size', y='Rating', color='Category',
+                 title='Rating vs Size by Category',
+                 labels={'Size': 'Size (MB)', 'Rating': 'Rating'})
+fig.show()
