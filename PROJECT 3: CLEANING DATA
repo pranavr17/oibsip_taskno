@@ -1,0 +1,69 @@
+import pandas as pd
+import numpy as np
+
+# Load datasets
+df1 = pd.read_csv('Dataset1.csv')
+df2 = pd.read_csv('Dataset2.csv')
+
+# Display the first few rows of each dataset
+print("Dataset 1:")
+print(df1.head())
+print("\nDataset 2:")
+print(df2.head())
+
+# Key Concepts and Challenges:
+
+# 1. Data Integrity
+# Check for data types and ensure they are correct
+print("\nData types in Dataset 1:")
+print(df1.dtypes)
+print("\nData types in Dataset 2:")
+print(df2.dtypes)
+
+# 2. Missing Data Handling
+# Check for missing values
+print("\nMissing values in Dataset 1:")
+print(df1.isnull().sum())
+print("\nMissing values in Dataset 2:")
+print(df2.isnull().sum())
+
+# Handling missing values (example: filling with mean for numerical columns)
+df1.fillna(df1.mean(), inplace=True)
+df2.fillna(df2.mean(), inplace=True)
+
+# 3. Duplicate Removal
+# Remove duplicate rows
+df1.drop_duplicates(inplace=True)
+df2.drop_duplicates(inplace=True)
+
+# 4. Standardization
+# Standardize column names (convert to lowercase and replace spaces with underscores)
+df1.columns = df1.columns.str.lower().str.replace(' ', '_')
+df2.columns = df2.columns.str.lower().str.replace(' ', '_')
+
+# Standardize data formats (example: date format)
+# df1['date_column'] = pd.to_datetime(df1['date_column'], format='%Y-%m-%d')
+# df2['date_column'] = pd.to_datetime(df2['date_column'], format='%Y-%m-%d')
+
+# 5. Outlier Detection
+# Example: Using Z-score to detect outliers for numerical columns
+from scipy import stats
+
+numeric_columns = df1.select_dtypes(include=[np.number]).columns
+z_scores = np.abs(stats.zscore(df1[numeric_columns]))
+
+# Set threshold for outliers
+threshold = 3
+outliers = (z_scores > threshold).all(axis=1)
+
+print("\nNumber of outliers detected in Dataset 1:")
+print(outliers.sum())
+
+# Removing outliers
+df1_cleaned = df1[~outliers]
+
+# Save cleaned data
+df1_cleaned.to_csv('Dataset1_cleaned.csv', index=False)
+df2.to_csv('Dataset2_cleaned.csv', index=False)
+
+print("\nData cleaning completed. Cleaned files saved.")
