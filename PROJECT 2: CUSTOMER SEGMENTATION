@@ -1,0 +1,62 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn.decomposition import PCA
+
+# Load the dataset
+# Replace 'dataset.csv' with your dataset file
+df = pd.read_csv('dataset.csv')
+
+# Data Exploration and Cleaning
+print(df.head())
+print(df.info())
+print(df.describe())
+
+# Handle missing or inconsistent data
+# Example: Dropping rows with missing values
+df = df.dropna()
+
+# Data Preprocessing
+# Select relevant features for clustering
+features = df[['purchase_value', 'frequency_of_purchases']]  # Update with relevant columns
+
+# Standardize the data
+scaler = StandardScaler()
+scaled_features = scaler.fit_transform(features)
+
+# Customer Segmentation using K-Means
+# Determine the number of clusters (k) - this can be optimized further
+kmeans = KMeans(n_clusters=5, random_state=0)  # You can change the number of clusters
+kmeans.fit(scaled_features)
+df['Cluster'] = kmeans.labels_
+
+# Visualization
+# 2D PCA for visualization
+pca = PCA(n_components=2)
+pca_features = pca.fit_transform(scaled_features)
+df['PCA1'] = pca_features[:, 0]
+df['PCA2'] = pca_features[:, 1]
+
+# Plotting the clusters
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=df, x='PCA1', y='PCA2', hue='Cluster', palette='viridis', s=100, alpha=0.7)
+plt.title('Customer Segmentation')
+plt.xlabel('PCA Component 1')
+plt.ylabel('PCA Component 2')
+plt.legend(title='Cluster')
+plt.show()
+
+# Insights and Recommendations
+# Analyze the characteristics of each cluster
+cluster_summary = df.groupby('Cluster').agg({
+    'purchase_value': ['mean', 'std'],
+    'frequency_of_purchases': ['mean', 'std']
+})
+print(cluster_summary)
+
+# Save the updated dataframe with cluster labels
+df.to_csv('segmented_customers.csv', index=False)
