@@ -1,0 +1,90 @@
+import pandas as pd
+
+# Load datasets
+dataset1 = pd.read_csv('path_to_dataset1.csv')
+dataset2 = pd.read_csv('path_to_dataset2.csv')
+
+# Display the first few rows of each dataset
+print(dataset1.head())
+print(dataset2.head())
+
+# Combine datasets if necessary
+# For example, if they have similar structures:
+# combined_data = pd.concat([dataset1, dataset2], ignore_index=True)
+
+# Check for missing values
+print(dataset1.isnull().sum())
+print(dataset2.isnull().sum())
+
+# Handle missing values if any
+# Example: Fill missing values with mean for numeric columns
+dataset1.fillna(dataset1.mean(), inplace=True)
+dataset2.fillna(dataset2.mean(), inplace=True)
+
+# Check for duplicates
+print(dataset1.duplicated().sum())
+print(dataset2.duplicated().sum())
+
+# Remove duplicates if any
+dataset1.drop_duplicates(inplace=True)
+dataset2.drop_duplicates(inplace=True)
+# Calculate basic statistics
+print(dataset1.describe())
+print(dataset2.describe())
+
+# Calculate median, mode
+median_values = dataset1.median()
+mode_values = dataset1.mode().iloc[0]
+print('Median values:\n', median_values)
+print('Mode values:\n', mode_values)
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Assuming the dataset has a 'date' column and 'sales' column
+dataset1['date'] = pd.to_datetime(dataset1['date'])
+dataset1.set_index('date', inplace=True)
+
+# Resample to monthly data if needed
+monthly_sales = dataset1['sales'].resample('M').sum()
+
+# Plot time series
+plt.figure(figsize=(12, 6))
+plt.plot(monthly_sales, label='Monthly Sales')
+plt.title('Monthly Sales Trend')
+plt.xlabel('Date')
+plt.ylabel('Sales')
+plt.legend()
+plt.grid(True)
+plt.show()
+# Analyzing customer demographics
+print(dataset1['customer_age'].describe())
+print(dataset1['customer_gender'].value_counts())
+
+# Analyzing purchasing behavior
+top_products = dataset1['product'].value_counts().head(10)
+print(top_products)
+
+# Plot top products
+plt.figure(figsize=(12, 6))
+sns.barplot(x=top_products.index, y=top_products.values)
+plt.title('Top 10 Products')
+plt.xlabel('Product')
+plt.ylabel('Number of Purchases')
+plt.xticks(rotation=90)
+plt.show()
+# Heatmap of sales data
+pivot_table = dataset1.pivot_table(values='sales', index='product', columns='date', aggfunc='sum')
+plt.figure(figsize=(12, 8))
+sns.heatmap(pivot_table, cmap='YlGnBu')
+plt.title('Sales Heatmap')
+plt.xlabel('Date')
+plt.ylabel('Product')
+plt.show()
+
+# Example of another visualization
+plt.figure(figsize=(12, 6))
+sns.histplot(dataset1['sales'], bins=30, kde=True)
+plt.title('Distribution of Sales')
+plt.xlabel('Sales')
+plt.ylabel('Frequency')
+plt.show()
